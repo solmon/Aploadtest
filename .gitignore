@@ -34,6 +34,9 @@ results.json
 # Reports directory
 reports/
 
+# User credentials file - contains sensitive info
+users.json
+
 # Operating System Files
 .DS_Store
 .DS_Store?

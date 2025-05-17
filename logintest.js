@@ -38,11 +38,12 @@ export function getOptions() {
 
 export let options = getOptions();
 
-// You can replace this with your actual user credentials or use a CSV/JSON file
+// Load user credentials from external JSON file
 const credentials = new SharedArray('users', function() {
-  return [
-    { email: 'ruchita.deshmukh@activpayroll.com', password: 'NewPassword@10', companyName:"Template" }
-  ];
+  // Load JSON file from disk
+  const data = JSON.parse(open('./users.json'));
+  console.log(`Loaded ${data.length} user(s) from users.json`);
+  return data;
 });
 
 // Track failed requests for reporting
