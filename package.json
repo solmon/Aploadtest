@@ -1,0 +1,19 @@
+{
+  "name": "aploadtest",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "rundebug": "k6 run -e DEBUG=true logintest.js",
+    "runtest": "k6 run logintest.js",
+    "loadtest": "k6 run --out json=results.json logintest.js",
+    "report": "node generate-report.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/k6": "^1.0.2"
+  }
+}
