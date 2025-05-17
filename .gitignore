@@ -32,6 +32,9 @@ yarn-error.log*
 # Uncomment if you don't want to track results.json
 # results.json
 
+# Reports directory
+reports/
+
 # Operating System Files
 .DS_Store
 .DS_Store?
