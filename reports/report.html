@@ -64,7 +64,7 @@
 </head>
 <body>
   <h1>K6 Load Test Report</h1>
-  <p>Report generated: 5/17/2025, 7:00:17 PM</p>
+  <p>Report generated: 5/17/2025, 7:23:05 PM</p>
   
   <div class="summary">
     <h2>Summary</h2>
@@ -74,36 +74,63 @@
   <div class="metrics">
     <div class="metric-card">
       <h3>Total Requests</h3>
-      <div class="metric-value">249</div>
+      <div class="metric-value">260</div>
     </div>
     
     <div class="metric-card">
       <h3>Failed Requests</h3>
-      <div class="metric-value danger">24</div>
+      <div class="metric-value danger">34</div>
     </div>
     
     <div class="metric-card">
       <h3>Checks Success Rate</h3>
-      <div class="metric-value warning">
-        90.10%
+      <div class="metric-value danger">
+        87.16%
       </div>
     </div>
     
     <div class="metric-card">
       <h3>Average Response Time</h3>
-      <div class="metric-value">370.80 ms</div>
+      <div class="metric-value">328.40 ms</div>
     </div>
     
     <div class="metric-card">
       <h3>95th Percentile</h3>
-      <div class="metric-value">778.58 ms</div>
+      <div class="metric-value">630.63 ms</div>
     </div>
     
     <div class="metric-card">
       <h3>Max Response Time</h3>
-      <div class="metric-value">2380.24 ms</div>
+      <div class="metric-value">1012.55 ms</div>
     </div>
   </div>
+  
+  <h2>Failed Request URLs</h2>
+  
+  <table>
+    <tr>
+      <th>Endpoint</th>
+      <th>URL</th>
+      <th>Status</th>
+      <th>Count</th>
+    </tr>
+    
+    <tr>
+      <td>FeatureFlags</td>
+      <td>FeatureFlags</td>
+      <td>401</td>
+      <td>26</td>
+    </tr>
+    
+    <tr>
+      <td>Login</td>
+      <td>Login</td>
+      <td>500</td>
+      <td>8</td>
+    </tr>
+    
+  </table>
+  
   
   <h2>Checks</h2>
   <table>
@@ -113,15 +140,15 @@
     </tr>
     <tr>
       <td>Passed Checks</td>
-      <td>282</td>
+      <td>285</td>
     </tr>
     <tr>
       <td>Failed Checks</td>
-      <td>31</td>
+      <td>42</td>
     </tr>
     <tr>
       <td>Success Rate</td>
-      <td>90.10%</td>
+      <td>87.16%</td>
     </tr>
   </table>
   
@@ -133,23 +160,23 @@
     </tr>
     <tr>
       <td>Total Requests</td>
-      <td>249</td>
+      <td>260</td>
     </tr>
     <tr>
       <td>Failed Requests</td>
-      <td>24</td>
+      <td>34</td>
     </tr>
     <tr>
       <td>Average Duration</td>
-      <td>370.80 ms</td>
+      <td>328.40 ms</td>
     </tr>
     <tr>
       <td>95th Percentile</td>
-      <td>778.58 ms</td>
+      <td>630.63 ms</td>
     </tr>
     <tr>
       <td>Maximum Duration</td>
-      <td>2380.24 ms</td>
+      <td>1012.55 ms</td>
     </tr>
   </table>
   

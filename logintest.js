@@ -45,6 +45,9 @@ const credentials = new SharedArray('users', function() {
   ];
 });
 
+// Track failed requests for reporting
+export const erroredUrls = new Map();
+
 export default function() {
   const isDebug = __ENV.DEBUG === 'true';
   
@@ -55,20 +58,27 @@ export default function() {
   
   // Step 1: Initial visit to login page
   if (isDebug) console.log('Step 1: Visiting login page...');
-  let response = http.get('https://test.activpayroll.com/persistent/activ8/login/Template', {
-    tags: { name: 'VisitLoginPage' }
+  const loginPageUrl = 'https://test.activpayroll.com/persistent/activ8/login/Template';
+  let response = http.get(loginPageUrl, {
+    tags: { name: 'VisitLoginPage', url: loginPageUrl }
   });
   
-  check(response, {
+  const loginPageCheck = check(response, {
     'login page loaded': (r) => r.status === 200,
   });
+  
+  // Track failed request
+  if (!loginPageCheck) {
+    recordError(loginPageUrl, response.status, 'VisitLoginPage');
+  }
   
   if (isDebug) console.log(`Login page response: Status ${response.status}, Size: ${response.body.length} bytes`);
   sleep(1);
   
   // Step 2: Check if user is locked out
   if (isDebug) console.log('Step 2: Checking if user is locked out...');
-  response = http.get(`https://test.activpayroll.com/persistent/activ8api/api/userSensitive/isUserLockedOut?email=${user.email}&companyName=Template`, {
+  const lockCheckUrl = `https://test.activpayroll.com/persistent/activ8api/api/userSensitive/isUserLockedOut?email=${user.email}&companyName=Template`;
+  response = http.get(lockCheckUrl, {
     headers: {
       "accept": "application/json, text/plain, */*",
       "accept-language": "en-US,en;q=0.9",
@@ -83,12 +93,17 @@ export default function() {
       "sec-fetch-mode": "cors",
       "sec-fetch-site": "same-origin"
     },
-    tags: { name: 'CheckUserLockStatus' }
+    tags: { name: 'CheckUserLockStatus', url: lockCheckUrl }
   });
   
   const lockStatus = check(response, {
     'user not locked out': (r) => r.status === 200 && r.body === 'false',
   });
+  
+  // Track failed request
+  if (!lockStatus) {
+    recordError(lockCheckUrl, response.status, 'CheckUserLockStatus');
+  }
   
   if (isDebug) {
     console.log(`Lock status response: ${response.status}`);
@@ -108,7 +123,8 @@ export default function() {
   
   if (isDebug) console.log(`Login payload: ${loginPayload}`);
   
-  response = http.post('https://test.activpayroll.com/persistent/activ8api/api/authenticate', loginPayload, {
+  const authUrl = 'https://test.activpayroll.com/persistent/activ8api/api/authenticate';
+  response = http.post(authUrl, loginPayload, {
     headers: {
       "accept": "application/json, text/plain, */*",
       "accept-language": "en-US,en;q=0.9",
@@ -117,7 +133,7 @@ export default function() {
       "pragma": "no-cache",
       "authorization": "Basic " + encoding.b64encode(`${user.email}:${user.password}:${user.companyName}`),
     },
-    tags: { name: 'Login' }
+    tags: { name: 'Login', url: authUrl }
   });
   
   // Check if login was successful and extract token
@@ -125,6 +141,11 @@ export default function() {
     'login successful': (r) => r.status === 200,
     'has token': (r) => JSON.parse(r.body).jwt !== undefined,
   });
+  
+  // Track failed request
+  if (!loginSuccess) {
+    recordError(authUrl, response.status, 'Login');
+  }
   
   if (isDebug) {
     console.log(`Login response status: ${response.status}`);
@@ -141,18 +162,24 @@ export default function() {
       console.log(`Token: ${token.substring(0, 15)}...`);
     }
     
-    response = http.get('https://test.activpayroll.com/persistent/activ8api/api/featureflags', {
+    const featureFlagsUrl = 'https://test.activpayroll.com/persistent/activ8api/api/featureflags';
+    response = http.get(featureFlagsUrl, {
       headers: {
         "accept": "application/json, text/plain, */*",
         "authorization": `Token ${token}`,
         "content-type": "application/json",
       },
-      tags: { name: 'FeatureFlags' }
+      tags: { name: 'FeatureFlags', url: featureFlagsUrl }
     });
     
     const profileSuccess = check(response, {
       'featureflags accessed': (r) => r.status === 200,
     });
+    
+    // Track failed request
+    if (!profileSuccess) {
+      recordError(featureFlagsUrl, response.status, 'FeatureFlags');
+    }
     
     if (isDebug) {
       console.log(`Profile response status: ${response.status}`);
@@ -163,4 +190,12 @@ export default function() {
   
   if (isDebug) console.log('✅ Test iteration complete');
   sleep(3);
+}
+
+// Helper function to record errors
+function recordError(url, status, endpoint) {
+  const key = `${url}:${status}`;
+  let errorData = erroredUrls.get(key) || { url, status, endpoint, count: 0 };
+  errorData.count++;
+  erroredUrls.set(key, errorData);
 }

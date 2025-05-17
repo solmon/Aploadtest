@@ -33,7 +33,8 @@ try {
 // Process NDJSON format and convert to appropriate structure
 function processNDJSON(lines) {
   const data = {
-    metrics: {}
+    metrics: {},
+    erroredUrls: [] // New array to store errored URLs
   };
   
   // Collect metric definitions and points
@@ -67,6 +68,42 @@ function processNDJSON(lines) {
           }
         }
       }
+      
+      // Extract errored URLs from custom error metrics (added in the test script)
+      if (item.type === 'Error') {
+        // Process error data
+        if (item.data && item.data.error_code !== undefined) {
+          data.erroredUrls.push({
+            url: item.data.scenario || item.data.request_url || 'Unknown URL',
+            status: item.data.error_code,
+            message: item.data.error_message || 'Request failed',
+            endpoint: item.data.endpoint || item.metric || 'Unknown',
+            count: 1
+          });
+        }
+      }
+
+      // Process URL details from HTTP metrics
+      if (item.metric === 'http_req_failed' && item.data && item.data.tags && item.data.value === 1) {
+        // This is a failed request with tags
+        const url = item.data.tags.url || 'Unknown URL';
+        const name = item.data.tags.name || 'Unknown Endpoint';
+        
+        // Add to errored URLs if not already there
+        const existingError = data.erroredUrls.find(e => e.url === url);
+        if (existingError) {
+          existingError.count++;
+        } else {
+          data.erroredUrls.push({
+            url: url,
+            status: item.data.tags.status || 'Error',
+            message: 'Request failed',
+            endpoint: name,
+            count: 1
+          });
+        }
+      }
+      
     } catch (err) {
       console.warn(`Skipping invalid JSON line: ${line}`);
     }
@@ -157,6 +194,9 @@ function generateHtmlReport(data) {
   const checksRate = metrics.checks?.values?.rate || 0;
   const checksPasses = metrics.checks?.values?.passes || 0;
   const checksFails = metrics.checks?.values?.fails || 0;
+  
+  // Errored URLs
+  const erroredUrls = data.erroredUrls || [];
   
   // Build HTML
   return `
@@ -266,6 +306,26 @@ function generateHtmlReport(data) {
     </div>
   </div>
   
+  <h2>Failed Request URLs</h2>
+  ${erroredUrls.length > 0 ? `
+  <table>
+    <tr>
+      <th>Endpoint</th>
+      <th>URL</th>
+      <th>Status</th>
+      <th>Count</th>
+    </tr>
+    ${erroredUrls.map(error => `
+    <tr>
+      <td>${error.endpoint}</td>
+      <td>${error.url}</td>
+      <td>${error.status}</td>
+      <td>${error.count}</td>
+    </tr>
+    `).join('')}
+  </table>
+  ` : '<p>No failed requests detected.</p>'}
+  
   <h2>Checks</h2>
   <table>
     <tr>
@@ -327,6 +387,7 @@ function generateHtmlReport(data) {
 
 function printSummary(data) {
   const metrics = data.metrics || {};
+  const erroredUrls = data.erroredUrls || [];
   
   console.log("\n===== K6 LOAD TEST SUMMARY =====");
   console.log(`Date: ${new Date().toLocaleString()}`);
@@ -344,5 +405,13 @@ function printSummary(data) {
   console.log("\n=== LOAD TESTING ===");
   console.log(`Virtual users max: ${data.root_group?.groups?.authentication?.vus || 0}`);
   console.log(`Iterations completed: ${data.root_group?.metrics?.iterations?.values?.count || 0}`);
+  
+  if (erroredUrls.length > 0) {
+    console.log("\n=== FAILED REQUEST URLS ===");
+    erroredUrls.forEach(error => {
+      console.log(`[${error.endpoint}] ${error.url} - Status: ${error.status} (${error.count} occurrences)`);
+    });
+  }
+  
   console.log("\n===============================");
 }
