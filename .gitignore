@@ -36,6 +36,7 @@ reports/
 
 # User credentials file - contains sensitive info
 users.json
+users.txt
 
 # Operating System Files
 .DS_Store

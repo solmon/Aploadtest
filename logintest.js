@@ -6,8 +6,8 @@ import encoding from 'k6/encoding';
 // Standard load test profile
 const defaultOptions = {
   stages: [
-    { duration: '30s', target: 5 },  // Ramp up to 5 users
-    { duration: '1m', target: 5 },   // Stay at 5 users for 1 minute
+    { duration: '30s', target: 50 },  // Ramp up to 5 users
+    { duration: '5m', target: 50 },   // Stay at 5 users for 1 minute
     { duration: '30s', target: 0 }   // Ramp down to 0 users
   ],
   thresholds: {
