@@ -56,22 +56,25 @@ export default function Dashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        {/* Key metrics cards */}
+      {/* Metrics Grid - All key metrics as cards on top */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
         <MetricCard 
           title="Total Requests" 
-          value={httpReqs.toLocaleString()} 
+          value={httpReqs.toLocaleString()}
+          icon="🔄" 
         />
         
         <MetricCard 
           title="Failed Requests" 
           value={httpFailed.toLocaleString()}
+          icon="❌"
           className={httpFailed > 0 ? "text-red-600" : "text-green-600"}
         />
         
         <MetricCard 
-          title="Checks Success Rate" 
+          title="Checks Success" 
           value={`${(checksRate * 100).toFixed(2)}%`}
+          icon="✓"
           className={
             checksRate >= 0.95 
               ? "text-green-600" 
@@ -82,27 +85,46 @@ export default function Dashboard() {
         />
         
         <MetricCard 
-          title="Average Response Time" 
+          title="Checks Passes" 
+          value={checksPasses.toLocaleString()}
+          icon="✅"
+          className="text-green-600"
+        />
+        
+        <MetricCard 
+          title="Checks Fails" 
+          value={checksFails.toLocaleString()}
+          icon="❎"
+          className={checksFails > 0 ? "text-red-600" : "text-green-600"}
+        />
+        
+        <MetricCard 
+          title="Avg Response" 
           value={`${httpAvgDuration} ms`}
+          icon="⏱️"
         />
         
         <MetricCard 
-          title="95th Percentile" 
+          title="95% Response" 
           value={`${httpP95Duration} ms`}
+          icon="📊"
         />
         
         <MetricCard 
-          title="Max Response Time" 
+          title="Max Response" 
           value={`${httpMaxDuration} ms`}
+          icon="⏰"
         />
         
         <MetricCard 
-          title="Virtual Users (Max)" 
+          title="Virtual Users" 
           value={vusMax.toString()}
+          icon="👥"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      {/* Charts Grid - 2x2 grid for all charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">Requests Over Time</h2>
           <div className="h-80">
@@ -116,9 +138,7 @@ export default function Dashboard() {
             <ResponseTimeChart data={testData} />
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">Checks</h2>
           <div className="h-80">
@@ -220,10 +240,13 @@ export default function Dashboard() {
   );
 }
 
-function MetricCard({ title, value, className = "text-blue-700" }: { title: string; value: string; className?: string }) {
+function MetricCard({ title, value, className = "text-blue-700", icon }: { title: string; value: string; className?: string, icon?: string }) {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-lg font-medium text-gray-700">{title}</h3>
+      <div className="flex items-center">
+        {icon && <div className="text-2xl mr-2">{icon}</div>}
+        <h3 className="text-lg font-medium text-gray-700">{title}</h3>
+      </div>
       <div className={`text-3xl font-bold mt-2 ${className}`}>
         {value}
       </div>
